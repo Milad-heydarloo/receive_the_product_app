@@ -567,16 +567,117 @@
 // }
 
 
-import 'dart:convert';
+// import 'dart:convert';
+// import 'package:flutter/material.dart';
+// import 'package:get/get.dart';
+// import 'package:pocketbase/pocketbase.dart';
+// import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+// import 'user_model.dart';
+//
+// class AuthController extends GetxController {
+//   final pb = PocketBase('https://saater.liara.run');
+//   final cacheManager = DefaultCacheManager();
+//
+//   @override
+//   void onInit() {
+//     super.onInit();
+//   }
+//
+//   Future<User?> getUser() async {
+//     try {
+//       final fileInfo = await cacheManager.getFileFromCache('user');
+//       if (fileInfo != null && fileInfo.file.existsSync()) {
+//         final fileContent = await fileInfo.file.readAsString();
+//         return User.fromJson(jsonDecode(fileContent));
+//       }
+//       return null;
+//     } catch (e) {
+//       print("Error in getUser: $e");
+//       return null;
+//     }
+//   }
+//
+//   Future<void> clearUser() async {
+//     try {
+//       await cacheManager.removeFile('user');
+//       update(['user']);
+//     } catch (e) {
+//       print("Error in clearUser: $e");
+//     }
+//   }
+//
+//   void logout() async {
+//     await clearUser();
+//     Get.offAllNamed('/login');
+//   }
+//
+//   Future<void> login(String email, String password) async {
+//     try {
+//       final authData = await pb.collection('users').authWithPassword(email, password);
+//       final userJson = authData.record!.toJson();
+//       final user = User.fromJson(userJson);
+//
+//       user.password = password; // ذخیره کردن پسورد در مدل کاربر
+//       if (user.verified) {
+//         // ذخیره اطلاعات کاربر در کش
+//         await saveUser(user);
+//
+//         Get.snackbar('ورود موفق', 'شما با موفقیت وارد شدید.', backgroundColor: Colors.green);
+//         Get.offAllNamed('/home');
+//       } else {
+//         Get.snackbar('دسترسی محدود', 'حساب کاربری شما تأیید نشده است. لطفاً با پشتیبانی تماس بگیرید.', backgroundColor: Colors.red);
+//       }
+//     } catch (e) {
+//       Get.snackbar('ورود ناموفق', 'ایمیل یا رمز عبور نادرست است. لطفاً دوباره تلاش کنید.', backgroundColor: Colors.red);
+//     }
+//   }
+//
+//   Future<void> checkAndLogin() async {
+//     try {
+//       final user = await getUser();
+//       if (user != null && user.email.isNotEmpty && user.password.isNotEmpty) {
+//         // مرحله 2: اعتبارسنجی اطلاعات در سرور
+//         final authData = await pb.collection('users').authWithPassword(user.email, user.password);
+//         final serverUserJson = authData.record!.toJson();
+//         final serverUser = User.fromJson(serverUserJson);
+//
+//         if (serverUser.verified) {
+//           Get.offAllNamed('/home');
+//         } else {
+//           Get.snackbar('دسترسی محدود', 'حساب کاربری شما تأیید نشده است. لطفاً با پشتیبانی تماس بگیرید.', backgroundColor: Colors.red);
+//           Get.offAllNamed('/login');
+//         }
+//       } else {
+//         Get.offAllNamed('/login');
+//       }
+//     } catch (e) {
+//       Get.snackbar('ورود ناموفق', 'مشکلی در اعتبارسنجی رخ داده است. لطفاً دوباره تلاش کنید.', backgroundColor: Colors.red);
+//       Get.offAllNamed('/login');
+//     }
+//   }
+//
+//   Future<void> saveUser(User user) async {
+//     try {
+//       final userJson = jsonEncode(user.toJson());
+//       final file = await cacheManager.putFile('user', utf8.encode(userJson));
+//       print("User saved to cache: ${file.path}");
+//     } catch (e) {
+//       print("Error in saveUser: $e");
+//     }
+//   }
+// }
+
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pocketbase/pocketbase.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:receive_the_product/Getx/TestDataBase/database_helper.dart';
+
 import 'user_model.dart';
 
 class AuthController extends GetxController {
   final pb = PocketBase('https://saater.liara.run');
-  final cacheManager = DefaultCacheManager();
+  final DatabaseHelper _databaseHelper = DatabaseHelper();
 
   @override
   void onInit() {
@@ -585,12 +686,7 @@ class AuthController extends GetxController {
 
   Future<User?> getUser() async {
     try {
-      final fileInfo = await cacheManager.getFileFromCache('user');
-      if (fileInfo != null && fileInfo.file.existsSync()) {
-        final fileContent = await fileInfo.file.readAsString();
-        return User.fromJson(jsonDecode(fileContent));
-      }
-      return null;
+      return await _databaseHelper.getUser();
     } catch (e) {
       print("Error in getUser: $e");
       return null;
@@ -599,7 +695,10 @@ class AuthController extends GetxController {
 
   Future<void> clearUser() async {
     try {
-      await cacheManager.removeFile('user');
+      final user = await getUser();
+      if (user != null) {
+        await _databaseHelper.deleteUser(user.id);
+      }
       update(['user']);
     } catch (e) {
       print("Error in clearUser: $e");
@@ -616,17 +715,12 @@ class AuthController extends GetxController {
       final authData = await pb.collection('users').authWithPassword(email, password);
       final userJson = authData.record!.toJson();
       final user = User.fromJson(userJson);
+      user.password = password;
+      // ذخیره اطلاعات کاربر در پایگاه داده
+      await _databaseHelper.insertUser(user);
 
-      user.password = password; // ذخیره کردن پسورد در مدل کاربر
-      if (user.verified) {
-        // ذخیره اطلاعات کاربر در کش
-        await saveUser(user);
-
-        Get.snackbar('ورود موفق', 'شما با موفقیت وارد شدید.', backgroundColor: Colors.green);
-        Get.offAllNamed('/home');
-      } else {
-        Get.snackbar('دسترسی محدود', 'حساب کاربری شما تأیید نشده است. لطفاً با پشتیبانی تماس بگیرید.', backgroundColor: Colors.red);
-      }
+      Get.snackbar('ورود موفق', 'شما با موفقیت وارد شدید.', backgroundColor: Colors.green);
+      Get.offAllNamed('/home');
     } catch (e) {
       Get.snackbar('ورود ناموفق', 'ایمیل یا رمز عبور نادرست است. لطفاً دوباره تلاش کنید.', backgroundColor: Colors.red);
     }
@@ -641,28 +735,13 @@ class AuthController extends GetxController {
         final serverUserJson = authData.record!.toJson();
         final serverUser = User.fromJson(serverUserJson);
 
-        if (serverUser.verified) {
-          Get.offAllNamed('/home');
-        } else {
-          Get.snackbar('دسترسی محدود', 'حساب کاربری شما تأیید نشده است. لطفاً با پشتیبانی تماس بگیرید.', backgroundColor: Colors.red);
-          Get.offAllNamed('/login');
-        }
+        Get.offAllNamed('/home');
       } else {
         Get.offAllNamed('/login');
       }
     } catch (e) {
       Get.snackbar('ورود ناموفق', 'مشکلی در اعتبارسنجی رخ داده است. لطفاً دوباره تلاش کنید.', backgroundColor: Colors.red);
       Get.offAllNamed('/login');
-    }
-  }
-
-  Future<void> saveUser(User user) async {
-    try {
-      final userJson = jsonEncode(user.toJson());
-      final file = await cacheManager.putFile('user', utf8.encode(userJson));
-      print("User saved to cache: ${file.path}");
-    } catch (e) {
-      print("Error in saveUser: $e");
     }
   }
 }
