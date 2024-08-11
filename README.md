@@ -1,6 +1,4 @@
-# دریافت برنامه
 
-برای دانلود برنامه اندروید، روی لینک‌های زیر کلیک کنید:
 
 <div style="text-align: center; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
     <h1 style="color: #333; margin-bottom: 20px;">دانلود برنامه</h1>
