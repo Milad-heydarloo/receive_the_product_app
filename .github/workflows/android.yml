@@ -1,0 +1,44 @@
+name: 🎉 Android Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    name: 🎉 Android Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: main
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          architecture: x64
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: List build directory contents
+        run: ls -R build/app/outputs/apk/release/
+
+      - name: Create Release Directory
+        run: mkdir -p release
+
+      - name: Move APK to Release Directory
+        run: mv build/app/outputs/apk/release/app-release.apk release/
+
+      - name: Upload APK to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: release/app-release.apk
+          tag: v1.0
+          overwrite: true
+          body: "This is the first release"
