@@ -176,14 +176,25 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   final AuthController authController = Get.find<AuthController>();
   List<LocationSupplierModel> locations = [];
   bool _isListOpen = false;
+  bool _isTrackingEnabled = true; // Default to true
 
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _mapController = MapController();
+  //   _getCurrentLocation();
+  //   _startLocationUpdates();
+  //   _initializeBackgroundLocation();
+  // }
   @override
   void initState() {
     super.initState();
     _mapController = MapController();
     _getCurrentLocation();
     _startLocationUpdates();
-    _initializeBackgroundLocation();
+    if (_isTrackingEnabled) {
+      _initializeBackgroundLocation();
+    }
   }
 
   void _initializeBackgroundLocation() async {
@@ -198,7 +209,6 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     );
     final user = await authController.getUser();
     BackgroundLocation.getLocationUpdates((location) {
-
       setState(() {
         LocationUser updatedLocation = LocationUser(
           id: '5imz3qage0zszam',
@@ -213,12 +223,50 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     });
   }
 
+  // void _initializeBackgroundLocation() async {
+  //   // درخواست مجوز دسترسی به موقعیت مکانی
+  //   await BackgroundLocation.startLocationService();
+  //
+  //   // تنظیمات مربوط به دقت و فیلتر فاصله
+  //   BackgroundLocation.setAndroidNotification(
+  //     title: "Location Tracking",
+  //     message: "Your location is being tracked in the background",
+  //     icon: "@mipmap/ic_launcher",
+  //   );
+  //   final user = await authController.getUser();
+  //   BackgroundLocation.getLocationUpdates((location) {
+  //
+  //     setState(() {
+  //       LocationUser updatedLocation = LocationUser(
+  //         id: '5imz3qage0zszam',
+  //         user: '${user!.username}',
+  //         latitude: location.latitude.toString(),
+  //         longitude: location.longitude.toString(),
+  //       );
+  //       orderController.updateLocation(updatedLocation);
+  //     });
+  //
+  //     print("Updated location: ${location.latitude}, ${location.longitude}");
+  //   });
+  // }
+  void _stopBackgroundLocation() async {
+    await BackgroundLocation.stopLocationService();
+  }
+
+  // @override
+  // void dispose() {
+  //   BackgroundLocation
+  //       .stopLocationService(); // توقف بروزرسانی موقعیت مکانی هنگام خروج از برنامه
+  //   super.dispose();
+  // }
   @override
   void dispose() {
-    BackgroundLocation
-        .stopLocationService(); // توقف بروزرسانی موقعیت مکانی هنگام خروج از برنامه
+    if (_isTrackingEnabled) {
+      BackgroundLocation.stopLocationService(); // توقف بروزرسانی موقعیت مکانی هنگام خروج از برنامه
+    }
     super.dispose();
   }
+
 
   void _getCurrentLocation() async {
     await orderController.FetchProductsAndSupplier();
@@ -298,13 +346,19 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
 
   late String apikey =
       'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6ImMzNjVkMDg2NjdmMzgxZDY1ZmI2NzU0ODcwNDJmZTQ1M2I1MzgxODEyMWY5YTE2OTIwNjFlNDY2NDA2MmNlYzE0NjZmNzIzZDEzMzk4NTk1In0.eyJhdWQiOiIyODIxMyIsImp0aSI6ImMzNjVkMDg2NjdmMzgxZDY1ZmI2NzU0ODcwNDJmZTQ1M2I1MzgxODEyMWY5YTE2OTIwNjFlNDY2NDA2MmNlYzE0NjZmNzIzZDEzMzk4NTk1IiwiaWF0IjoxNzIxOTQwODg3LCJuYmYiOjE3MjE5NDA4ODcsImV4cCI6MTcyNDUzMjg4Nywic3ViIjoiIiwic2NvcGVzIjpbImJhc2ljIl19.P-HVICCEemigM5vv_lYuxVogPRp3_Tpa1-6zJWONRJ9BfsWXKd4B6FPgnxmJg1wkSGOXc_GFFoeZuFrf9nRfJzwdofkbFbI9yrtWWMATW2PIY8zjd_2SoZ4O94HE-AfyPOO4Dq_V7TJV1xiGinIJdyFCCfMBAuxN-2p8etP5UF2R6r9gDqxXpeVXiHbDx2zB9nTpONG_rlCi26SJ4Y63rDhsAOppdW6v0bP8bF7wkcOJ_z2lwzaWpcOnvJ0uP0cnYc_y9MiINw_P0g79MWMV-ntFNaaj_LU5G_kvSb9y0uWbmFrPgLoEgRFkdkRK2OEAORd9b5ux_iJGnkYV39UHPQ';
-  bool _isTrackingEnabled = false;
+
 
   void _toggleTracking() {
     setState(() {
       _isTrackingEnabled = !_isTrackingEnabled;
+      if (_isTrackingEnabled) {
+        _initializeBackgroundLocation();
+      } else {
+        _stopBackgroundLocation();
+      }
     });
   }
+
 
   void _startLocationUpdates() {
 
@@ -368,6 +422,14 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
           //
           //   },
           // ),
+          IconButton(
+            icon: Icon(
+              _isTrackingEnabled ? Icons.location_on : Icons.location_off,
+              color: _isTrackingEnabled ? Colors.green : Colors.red,
+            ),
+            onPressed: _toggleTracking, // Toggle tracking
+          ),
+
         ],
         title: const Text('دریافت کالا ساتر'),
       ),
