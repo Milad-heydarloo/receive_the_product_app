@@ -1,7 +1,7 @@
 
 <br/>
 <div align="center">
-    <h3>اپلیکیشن دریافت کالا ساتر</h3>
+    <h5>اپلیکیشن دریافت کالا ساتر</h5>
     <p>برای دانلود برنامه اندروید، روی لینک‌های زیر کلیک کنید:</p>
     <a href="https://github.com/Milad-heydarloo/receive_the_product_app/raw/main/apk/app-arm64-v8a-release.apk" style="display: inline-block; padding: 10px 20px; margin: 5px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 4px; font-size: 16px; transition: background-color 0.3s ease;">دانلود برنامه (arm64-v8a)</a>
     <a href="https://github.com/Milad-heydarloo/receive_the_product_app/raw/main/apk/app-armeabi-v7a-release.apk" style="display: inline-block; padding: 10px 20px; margin: 5px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 4px; font-size: 16px; transition: background-color 0.3s ease;">دانلود برنامه (armeabi-v7a)</a>
