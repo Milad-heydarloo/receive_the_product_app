@@ -177,57 +177,14 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   List<LocationSupplierModel> locations = [];
   bool _isListOpen = false;
 
-  bool _isBackgroundTrackingEnabled = true; // وضعیت مکان‌یابی پس‌زمینه
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   _mapController = MapController();
-  //   _getCurrentLocation();
-  //   _startLocationUpdates();
-  //   _initializeBackgroundLocation();
-  // }
-
   @override
   void initState() {
     super.initState();
     _mapController = MapController();
     _getCurrentLocation();
     _startLocationUpdates();
-
-    // فعال کردن مکان‌یابی پس‌زمینه اگر در حالت فعال باشد
-    if (_isBackgroundTrackingEnabled) {
-      _initializeBackgroundLocation();
-    }
+    _initializeBackgroundLocation();
   }
-
-
-  // void _initializeBackgroundLocation() async {
-  //   // درخواست مجوز دسترسی به موقعیت مکانی
-  //   await BackgroundLocation.startLocationService();
-  //
-  //   // تنظیمات مربوط به دقت و فیلتر فاصله
-  //   BackgroundLocation.setAndroidNotification(
-  //     title: "Location Tracking",
-  //     message: "Your location is being tracked in the background",
-  //     icon: "@mipmap/ic_launcher",
-  //   );
-  //   final user = await authController.getUser();
-  //   BackgroundLocation.getLocationUpdates((location) {
-  //
-  //     setState(() {
-  //       LocationUser updatedLocation = LocationUser(
-  //         id: '5imz3qage0zszam',
-  //         user: '${user!.username}',
-  //         latitude: location.latitude.toString(),
-  //         longitude: location.longitude.toString(),
-  //       );
-  //       orderController.updateLocation(updatedLocation);
-  //     });
-  //
-  //     print("Updated location: ${location.latitude}, ${location.longitude}");
-  //   });
-  // }
 
   void _initializeBackgroundLocation() async {
     // درخواست مجوز دسترسی به موقعیت مکانی
@@ -239,9 +196,9 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
       message: "Your location is being tracked in the background",
       icon: "@mipmap/ic_launcher",
     );
-
     final user = await authController.getUser();
     BackgroundLocation.getLocationUpdates((location) {
+
       setState(() {
         LocationUser updatedLocation = LocationUser(
           id: '5imz3qage0zszam',
@@ -376,21 +333,6 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     });
   }
 
-
-
-  void _toggleBackgroundTracking() async {
-    setState(() {
-      _isBackgroundTrackingEnabled = !_isBackgroundTrackingEnabled;
-    });
-
-    if (_isBackgroundTrackingEnabled) {
-      _initializeBackgroundLocation();
-    } else {
-      BackgroundLocation.stopLocationService();
-    }
-  }
-
-
   @override
   Widget build(BuildContext context) {
 
@@ -414,13 +356,6 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
           IconButton(
             icon: Icon(Icons.map),
             onPressed: _focusOnMarkers,
-          ),
-          IconButton(
-            icon: Icon(
-              _isBackgroundTrackingEnabled ? Icons.online_prediction : Icons.online_prediction,
-              color: _isBackgroundTrackingEnabled ? Colors.green : Colors.red,
-            ),
-            onPressed: _toggleBackgroundTracking,
           ),
           // IconButton(
           //   icon: Icon(Icons.supervised_user_circle),
