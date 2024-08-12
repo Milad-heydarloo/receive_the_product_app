@@ -177,13 +177,18 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   List<LocationSupplierModel> locations = [];
   bool _isListOpen = false;
 
+  bool _isBackgroundTrackingEnabled = true; // وضعیت مکان‌یابی پس‌زمینه
+
+
   @override
   void initState() {
     super.initState();
     _mapController = MapController();
     _getCurrentLocation();
     _startLocationUpdates();
-    _initializeBackgroundLocation();
+    if (_isBackgroundTrackingEnabled) {
+      _initializeBackgroundLocation();
+    }
   }
 
   void _initializeBackgroundLocation() async {
@@ -197,22 +202,33 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
       icon: "@mipmap/ic_launcher",
     );
     final user = await authController.getUser();
+    print('bbbbbbbbbb');
+    print(user!.id.toString());
     BackgroundLocation.getLocationUpdates((location) {
 
       setState(() {
         LocationUser updatedLocation = LocationUser(
-          id: '5imz3qage0zszam',
-          user: '${user!.username}',
+
           latitude: location.latitude.toString(),
           longitude: location.longitude.toString(),
         );
-        orderController.updateLocation(updatedLocation);
+        orderController.updateLocation(updatedLocation,user!.id);
       });
 
       print("Updated location: ${location.latitude}, ${location.longitude}");
     });
   }
+  void _toggleBackgroundTracking() async {
+    setState(() {
+      _isBackgroundTrackingEnabled = !_isBackgroundTrackingEnabled;
+    });
 
+    if (_isBackgroundTrackingEnabled) {
+      _initializeBackgroundLocation();
+    } else {
+      BackgroundLocation.stopLocationService();
+    }
+  }
   @override
   void dispose() {
     BackgroundLocation
@@ -306,8 +322,11 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     });
   }
 
-  void _startLocationUpdates() {
+  void _startLocationUpdates() async {
 
+    final user = await authController.getUser();
+    print('bbbbbbbbbb');
+    print(user!.id.toString());
     Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.medium,
@@ -316,11 +335,10 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     ).listen((Position position) {
       setState(() {
         LocationUser location = LocationUser(
-            id: '5imz3qage0zszam',
-            user: 'ashi',
+
             latitude: position.latitude.toString(),
             longitude: position.longitude.toString());
-        orderController.updateLocation(location);
+        orderController.updateLocation(location,user!.id);
         _currentPosition = position;
         if (_isTrackingEnabled) {
           _mapController.move(
@@ -356,6 +374,13 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
           IconButton(
             icon: Icon(Icons.map),
             onPressed: _focusOnMarkers,
+          ),
+          IconButton(
+            icon: Icon(
+              _isBackgroundTrackingEnabled ? Icons.online_prediction : Icons.online_prediction,
+              color: _isBackgroundTrackingEnabled ? Colors.green : Colors.red,
+            ),
+            onPressed: _toggleBackgroundTracking,
           ),
           // IconButton(
           //   icon: Icon(Icons.supervised_user_circle),

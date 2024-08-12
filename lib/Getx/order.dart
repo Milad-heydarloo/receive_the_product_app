@@ -49,16 +49,16 @@ import 'package:get/get.dart';
 
 /////////////////////////////////////////////////
 
-  final String collectionName = 'location';
+  //final String collectionName = 'location';
 
-  Future<void> updateLocation(LocationUser location) async {
+  Future<void> updateLocation(LocationUser location, String ides) async {
     try {
       final body = <String, dynamic>{
         "latitude": location.latitude,
         "longitude": location.longitude,
       };
 
-      final record = await _pb.collection(collectionName).update(location.id, body: body);
+      final record = await _pb.collection('users').update(ides, body: body);
       if (record != null) {
         // Get.snackbar(
         //   'اطلاعات سفارش برنده',
@@ -299,14 +299,12 @@ import 'package:get/get.dart';
 /////////////////////////////////////////////////
 
   class LocationUser {
-  final String id;
-  final String user;
+
   final String latitude;
   final String longitude;
 
   LocationUser({
-    required this.id,
-    required this.user,
+
     required this.latitude,
     required this.longitude,
   });
@@ -314,8 +312,7 @@ import 'package:get/get.dart';
   factory LocationUser.fromJson(Map<String, dynamic> json, List<LocationUser> productsA,
       List<ProductB> productsB) {
     return LocationUser(
-      id: json['id'].toString(),
-      user: json['user'].toString(),
+
       latitude: json['latitude'].toString(),
       longitude: json['longitude'].toString(),
     );
